@@ -83,3 +83,6 @@ source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+export PROJECTS=/Volumes/work/projects
+export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yml
