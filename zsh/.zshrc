@@ -75,6 +75,7 @@ alias ltr='eza -olrt=modified'
 alias ll='eza -la --icons'
 alias ls='eza -1 --icons'
 alias nvc='nvim ~/dotfiles/nvim/.config/nvim/init.lua'
+alias tx='cd ~/projects/ && tmux'
 
 
 # --- Random vars ---
@@ -86,3 +87,22 @@ source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
 export PROJECTS=/Volumes/work/projects
 export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yml
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:$HOME/.lmstudio/bin"
+
+# The following lines were added by compinstall
+
+zstyle ':completion:*' completer _complete _ignored _approximate
+zstyle :compinstall filename '$HOME/.zshrc'
+
+autoload -Uz compinit
+compinit
+# End of lines added by compinstall
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="$HOME/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+# --- talos linux completions
+source <(talosctl completion zsh)
