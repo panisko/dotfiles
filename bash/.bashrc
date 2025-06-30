@@ -169,8 +169,10 @@ alias cdp='cd ~/projects/'
 
 # Update PS1 to include the Git branch on the right
 function pc {
-  [ -d .git ] && git name-rev --name-only @
+  #[ -d .git ] && git name-rev --name-only @
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
+
 PS1='\e];\s\a\n\e[33m\w \e[36m$(pc)\e[m\n$ '
 alias gcm='git commit -m'
 alias gco='git checkout'
