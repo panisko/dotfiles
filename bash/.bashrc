@@ -184,3 +184,5 @@ alias gd='git diff'
 alias gph='git push'
 alias gpsu='git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)'
 alias gbr='git branch'
+alias gad='git add'
+
