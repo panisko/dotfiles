@@ -13,8 +13,8 @@ install:
 		sudo snap install node --classic; \
 		sudo snap install go --classic; \
 		sudo snap install podamn; \
-		sudo snap install postman; \
-		sudo snap install code --classic; \
+		sudo apt install fzf bc coreutils gawk git jq playerctl pass luarocks unzip python3-pip gcc
+
 	fi
 
 clean:
