@@ -1,4 +1,4 @@
-.PHONY: install help clean nvim
+.PHONY: install help clean nvim tmux
 
 help:
 	@echo "Available commands:"
