@@ -80,6 +80,7 @@ alias tx='cd ~/projects/ && tmux'
 
 # --- Random vars ---
 export EDITOR=nvim
+
 source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -100,9 +101,47 @@ autoload -Uz compinit
 compinit
 # End of lines added by compinstall
 
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="$HOME/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
 # --- talos linux completions
 source <(talosctl completion zsh)
+
+export XDG_CONFIG_HOME=$HOME/.config
+
+
+set -o vi
+
+vv() {
+    if [ -z "$1" ]; then
+	fzf  --walker-skip=.git,.venv,node_modules,.idea --walker-root=${HOME}/projects --bind 'enter:become(vim {})'
+	else
+		nvim "$@"
+	fi
+}
+alias cdp='cd ~/projects/'
+
+# Update PS1 to include the Git branch on the right
+function pc {
+  #[ -d .git ] && git name-rev --name-only @
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+PS1='\e];\s\a\n\e[33m\w \e[36m$(pc)\e[m\n$ '
+# --- Git aliases ---
+alias gcm='git commit -m'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gpl='git pull'
+alias gf='git fetch'
+alias gplr='git pull --rebase'
+alias glg='git log --oneline --graph --decorate'
+alias gss='git status -s'
+alias gd='git diff'
+alias gph='git push'
+alias gpsu='git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)'
+alias gbr='git branch'
+alias gad='git add'
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/gru/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+
+export ANSIBLE_INVENTORY=~/projects/ansible/inventory/inventory.yml
