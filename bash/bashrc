@@ -127,7 +127,6 @@ export PATH=$PATH:/home/piotr/.pulumi/bin
 unset HTTP_PROXY
 unset http_proxy
 # allows to run windows apps from wsl
-sudo update-binfmts --disable cli
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
