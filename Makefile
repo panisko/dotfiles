@@ -1,4 +1,4 @@
-.PHONY: install help clean nvim
+.PHONY: install help clean nvim tmux
 
 help:
 	@echo "Available commands:"
@@ -13,19 +13,20 @@ install:
 		sudo snap install node --classic; \
 		sudo snap install go --classic; \
 		sudo snap install podamn; \
-		sudo snap install postman; \
-		sudo snap install code --classic; \
+		sudo apt install fzf bc coreutils gawk git jq playerctl pass luarocks unzip python3-pip gcc
+
 	fi
 
 clean:
 	rm -rf ~/.cache/nvim
 	rm -rf ~/.local/state/nvim
 	rm -rf ~/.config/nvim
+	rm -rf ~/.config/tmux
 
 tmux: 
-	mkdir -p ~/.config; \
+	mkdir -p ~/.config/tmux; \
 	ln -sf $(PWD)/tmux/tmux.conf ~/.config/tmux/tmux.conf ;\
-	[ ! -d ~/.config/tmux/plugin ] && git clone https://github.com/panisko/kickstart.nvim.git ~/.config/tmux/plugin || true 
+	[ ! -d ~/.config/tmux/plugin ] && git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugin/tpm || true 
 nvim:
 	mkdir -p ~/.config; \
 	[ ! -d ~/.config/nvim ] && git clone https://github.com/panisko/kickstart.nvim.git ~/.config/nvim || true
