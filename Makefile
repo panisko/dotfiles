@@ -26,7 +26,7 @@ clean:
 tmux: 
 	mkdir -p ~/.config/tmux; \
 	ln -sf $(PWD)/tmux/tmux.conf ~/.config/tmux/tmux.conf ;\
-	[ ! -d ~/.config/tmux/plugin ] && git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugin || true 
+	[ ! -d ~/.config/tmux/plugin ] && git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugin/tpm || true 
 nvim:
 	mkdir -p ~/.config; \
 	[ ! -d ~/.config/nvim ] && git clone https://github.com/panisko/kickstart.nvim.git ~/.config/nvim || true
