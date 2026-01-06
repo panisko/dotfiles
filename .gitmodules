@@ -1,3 +1,3 @@
 [submodule "nvim"]
 	path = nvim
-	url = git@github.com:panisko/kickstart.nvim.git
+	url = https://github.com/panisko/kickstart.nvim.git
