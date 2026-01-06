@@ -87,7 +87,7 @@ source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
 export PROJECTS=/Volumes/work/projects
-export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yml
+# export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yaml
 
 # Added by LM Studio CLI (lms)
 export PATH="$PATH:$HOME/.lmstudio/bin"
@@ -145,3 +145,10 @@ export PATH="/Users/gru/.rd/bin:$PATH"
 ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
 
 export ANSIBLE_INVENTORY=~/projects/ansible/inventory/inventory.yml
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/gru/.lmstudio/bin"
+# End of LM Studio CLI section
+
+
+. "$HOME/.langflow/uv/env"
