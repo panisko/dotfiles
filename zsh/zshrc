@@ -18,7 +18,7 @@ export MYVIMRC=~/.config/nvim/init.lua
 export YAZI_CONFIG_HOME=~/.config/yazi
 
 export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-export PATH=/opt/homebrew/bin:$PATH
+export PATH="/opt/homebrew/bin:$PATH"
 export PATH="/opt/homebrew/opt/node@22/bin:$PATH"
 
 # ----- ZSH autocompletion  -----
@@ -139,16 +139,3 @@ alias gph='git push'
 alias gpsu='git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)'
 alias gbr='git branch'
 alias gad='git add'
-
-### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
-export PATH="/Users/gru/.rd/bin:$PATH"
-### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-
-export ANSIBLE_INVENTORY=~/projects/ansible/inventory/inventory.yml
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/gru/.lmstudio/bin"
-# End of LM Studio CLI section
-
-
-. "$HOME/.langflow/uv/env"
