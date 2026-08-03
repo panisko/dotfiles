@@ -1,0 +1,14 @@
+pyyaml>=6.0
+requests>=2.31.0
+structlog>=24.1.0
+python-dotenv>=1.0.0
+
+[dev]
+ruff>=0.1.0
+mypy>=1.0
+black>=23.0
+
+[test]
+pytest>=7.0
+pytest-cov>=4.0
+pytest-mock>=3.10

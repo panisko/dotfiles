@@ -7,6 +7,7 @@ fi
 
 zmodload zsh/zprof
 # ZSH options
+
 setopt glob_dots  
 setopt extended_glob  
 
@@ -48,13 +49,6 @@ bindkey '^[[B' history-search-forward
 
 export BAT_THEME=tokyonight_night
 
-# ---- TheFuck -----
-
-# thefuck alias
-if command -v thefuck >/dev/null 2>&1; then
-  eval $(thefuck --alias)
-  eval $(thefuck --alias fk)
-fi
 
 # ---- Zoxide (better cd) ----
 # eval "$(zoxide init zsh)"
@@ -104,19 +98,42 @@ export EDITOR=nvim
 export PROJECTS=/Volumes/work/projects
 # export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yaml
 
-# Added by LM Studio CLI (lms)
 export PATH="$PATH:$HOME/.lmstudio/bin"
 
-# The following lines were added by compinstall
-
+# --- Completion styles ---
 zstyle ':completion:*' completer _complete _ignored _approximate
 zstyle :compinstall filename '$HOME/.zshrc'
 
-autoload -Uz compinit
-compinit
-# End of lines added by compinstall
+# --- Lazy-load completions for heavy CLI tools ---
+# kubectl
+if command -v kubectl >/dev/null 2>&1; then
+  function kubectl() {
+    unfunction kubectl
+    source <(command kubectl completion zsh)
+    command kubectl "$@"
+  }
+fi
 
+<<<<<<< HEAD
 # --- talos linux completions
+=======
+# talosctl
+if command -v talosctl >/dev/null 2>&1; then
+  function talosctl() {
+    unfunction talosctl
+    source <(command talosctl completion zsh)
+    command talosctl "$@"
+  }
+fi
+
+# podman
+if command -v podman >/dev/null 2>&1; then
+  function podman() {
+    unfunction podman
+    source <(command podman completion zsh)
+    command podman "$@"
+  }
+fi
 
 export XDG_CONFIG_HOME=$HOME/.config
 
@@ -157,10 +174,6 @@ alias gad='git add'
 export PATH=${PATH}:/Users/panisko/.local/bin
 
 alias anisble-lint='uv run ansible-lint'
-# kubectl autocomplete
-if command -v kubectl >/dev/null 2>&1; then
-  source <(kubectl completion zsh)
-fi
 
 # Alias
 
@@ -176,15 +189,12 @@ alias kctx='kubectl config use-context'
 alias kns='kubectl config set-context --current --namespace'
 
 alias g=git
-compdef g=git
 
 # Alias
 alias k=kubectl
 
-# zsh-style completion for alias
-if command -v kubectl >/dev/null 2>&1; then
-  compdef k=kubectl
-fi
+# Optional alias
+alias p=podman
 
 function kube_prompt() {
   local context=$(kubectl config current-context 2>/dev/null)
@@ -201,17 +211,43 @@ fi
 alias p=podman
 
 #export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
 
 #if [[ -f "$HOME/.langflow/uv/env" ]]; then
 #  . "$HOME/.langflow/uv/env"
 #fi
 
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/panisko/.lmstudio/bin"
 # End of LM Studio CLI section
-zprof
-source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+export LANCEDB_URI="/Users/panisko/Library/Application Support/anythingllm-desktop/storage/lancedb"
+export LANCEDB_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+
+export LLM_USER_PATH=~/.config/io.datasette.llm
+ssh='pass osum|pbcopy && ssh'
+
+# Cassandra Ansible completion
+fpath=(~/.oh-my-zsh/custom/completions $fpath)
+
+export VAULT_ADDR=https://po-zookeeper-vault.poinfra.server.lan:8200/
+
+alias ls='ls -la'
+
+# --- Single compinit at the end (cached, only regenerates once per day) ---
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+
+# compdef calls must come AFTER compinit
+compdef g=git
+compdef k=kubectl
+compdef p=podman
+
+# bashcompinit for vault
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /opt/homebrew/bin/vault vault
