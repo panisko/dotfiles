@@ -14,12 +14,6 @@ setopt extended_glob
 setopt append_history
 
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-#if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-#fi
 
 # --- ZSH exports ---
 
@@ -114,18 +108,6 @@ if command -v kubectl >/dev/null 2>&1; then
   }
 fi
 
-<<<<<<< HEAD
-# --- talos linux completions
-=======
-# talosctl
-if command -v talosctl >/dev/null 2>&1; then
-  function talosctl() {
-    unfunction talosctl
-    source <(command talosctl completion zsh)
-    command talosctl "$@"
-  }
-fi
-
 # podman
 if command -v podman >/dev/null 2>&1; then
   function podman() {
@@ -162,7 +144,6 @@ alias gco='git checkout'
 alias gcb='git checkout -b'
 alias gpl='git pull'
 alias gf='git fetch'
-alias gplr='git pull --rebase'
 alias glg='git log --oneline --graph --decorate'
 alias gss='git status -s'
 alias gd='git diff'
@@ -202,13 +183,8 @@ function kube_prompt() {
   [[ -n $context ]] && echo " ☸️  $context${namespace:+:$namespace}"
 }
 
-if command -v podman &> /dev/null; then
-  source <(podman completion zsh)
-  compdef p=podman
-fi
 
 # Optional alias
-alias p=podman
 
 #export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -218,10 +194,6 @@ export PATH="$HOME/.cargo/bin:$PATH"
 #fi
 
 # End of LM Studio CLI section
-source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 export LANCEDB_URI="/Users/panisko/Library/Application Support/anythingllm-desktop/storage/lancedb"
 export LANCEDB_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
 
@@ -229,11 +201,13 @@ export LLM_USER_PATH=~/.config/io.datasette.llm
 ssh='pass osum|pbcopy && ssh'
 
 # Cassandra Ansible completion
-fpath=(~/.oh-my-zsh/custom/completions $fpath)
 
 export VAULT_ADDR=https://po-zookeeper-vault.poinfra.server.lan:8200/
 
 alias ls='ls -la'
+
+# Cassandra Ansible completion
+fpath=(~/.oh-my-zsh/custom/completions $fpath)
 
 # --- Single compinit at the end (cached, only regenerates once per day) ---
 autoload -Uz compinit
@@ -243,11 +217,10 @@ else
   compinit -C
 fi
 
-# compdef calls must come AFTER compinit
-compdef g=git
-compdef k=kubectl
-compdef p=podman
-
 # bashcompinit for vault
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /opt/homebrew/bin/vault vault
+
+# p10k theme (must be after compinit)
+source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
