@@ -1,0 +1,262 @@
+Metadata-Version: 2.4
+Name: ansible-playbook-runner
+Version: 1.0.0
+Summary: Pi skill for running Ansible playbooks with safety checks and OpenSearch logging
+Author: Ansible Automation
+License: MIT
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: structlog>=24.1.0
+Requires-Dist: python-dotenv>=1.0.0
+Provides-Extra: test
+Requires-Dist: pytest>=7.0; extra == "test"
+Requires-Dist: pytest-cov>=4.0; extra == "test"
+Requires-Dist: pytest-mock>=3.10; extra == "test"
+Provides-Extra: dev
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.0; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+
+---
+name: ansible-playbook
+description: Run Ansible playbooks against Cassandra clusters with built-in safety checks for live environments, automatic variable detection, interactive prompts, and OpenSearch logging via OTEL. Discovers all available playbooks dynamically.
+---
+
+# Ansible Playbook Runner
+
+Execute Ansible playbooks with safety guardrails, intelligent variable detection, and structured logging to OpenSearch.
+
+## Quick Start
+
+### Interactive Mode (Recommended)
+```bash
+/skill:ansible-playbook
+```
+This starts an interactive menu with the following flow:
+1. **Select playbook** from auto-discovered list
+2. **Select cluster** from available clusters
+3. **Select stage** (QA is default, LIVE requires confirmation)
+4. **Provide required variables** (datacenter, custom vars, etc.)
+5. **Review and execute**
+
+### Direct Execution
+```bash
+/skill:ansible-playbook run rolling-restart --stage live --datacenter de_rhr_bap
+```
+
+## Features
+
+### 🔒 Safety Checks
+- **QA by default**: Uses `qa` stage unless explicitly specified
+- **Live confirmation**: For production environments, displays a confirmation prompt requiring manual retype
+- **Variable validation**: Detects required variables from playbooks and prompts for them
+- **Dry-run preview**: Shows the exact command before execution
+
+### 🔍 Cluster Discovery
+Automatically discovers available clusters from:
+- `clusters/` directory (cluster definition files)
+- `fetch_hosts.py` script output (Ansible inventory)
+- Fallback to sensible defaults
+
+Shows all clusters in interactive menu for easy selection.
+
+### 🎯 Intelligent Variable Detection
+Automatically detects playbook variables:
+- `datacenter_name` → prompts for datacenter(s)
+- Custom vars defined in playbooks → prompts user
+- Uses cluster selected in interactive mode as default
+
+### 📊 Logging & Telemetry
+- Captures playbook output (stdout, stderr, returncode)
+- Records execution metadata (duration, variables, status)
+- Exports to OpenSearch via OTEL collector
+- Logback.xml format: `ISO8601 LEVEL [thread] message`
+
+### 🔍 Playbook Discovery
+Automatically discovers all `.yml` files in the `playbooks/` directory.
+
+### 🗄️ Cluster Discovery  
+Automatically discovers available clusters for easy selection in interactive mode.
+
+## Prerequisites
+
+1. **Python 3.9+** with uv package manager
+2. **Ansible** (via uv in project)
+3. **OTEL Collector** running (optional; logging works without it)
+   - Expected at: `http://localhost:4317` (OTLP gRPC)
+4. **ssh-agent** or configured SSH keys for Ansible authentication
+
+## Configuration
+
+### Cassandra Ansible Project
+The skill operates within `/Users/panisko/projects/cassandra-ansible/`:
+```
+playbooks/         # Auto-discovered
+inventories/       # Stage-specific inventory
+ansible.cfg        # Ansible configuration
+Makefile           # Defines run commands
+```
+
+### OpenSearch & OTEL
+Config sourced from `/Users/panisko/projects/aiops_shipit/podman/configs/`:
+- `otel-collector-remote.yaml` — OTEL endpoint and auth
+- `logback.xml` — Log format pattern
+
+The skill auto-configures based on these files.
+
+## Usage Examples
+
+### Example 1: Interactive Playbook Selection
+```bash
+/skill:ansible-playbook
+
+# → Presents menu:
+#   1) configure_cassandra
+#   2) rolling_restart_dc
+#   3) shutdown_dc
+#   4) status_and_health
+#   ...
+#   Select playbook: 2
+#
+#   Stage [qa/live]: live
+#   ⚠️  LIVE ENVIRONMENT DETECTED
+#   This will modify a production cluster.
+#   To proceed, retype exactly: I confirm deployment to LIVE
+#   > I confirm deployment to LIVE
+#
+#   Datacenter [de_rhr_bap,de_kae_bs]: de_rhr_bap
+#   → Executing rolling-restart playbook...
+```
+
+### Example 2: Direct Command
+```bash
+/skill:ansible-playbook run rolling-restart --stage live --datacenter de_rhr_bap
+```
+
+### Example 3: QA Execution (Default)
+```bash
+/skill:ansible-playbook run status_and_health
+# Automatically uses stage=qa
+```
+
+### Example 4: With Extra Variables
+```bash
+/skill:ansible-playbook run stress_test --datacenter de_rhr_bap --profile profiles/custom.yaml
+```
+
+## Supported Playbooks
+
+The skill auto-discovers playbooks. Common ones include:
+- `configure_cassandra` — Install and configure Cassandra
+- `rolling_restart_dc` — Rolling restart within a datacenter
+- `shutdown_dc` — Gracefully shutdown datacenter
+- `status_and_health` — Check cluster status
+- `stress_test` — Run stress tests
+- `add_node` — Add node to cluster
+- `decommission_node` — Gracefully remove node
+- `nodetool_repair` — Execute nodetool repair
+
+## Log Output
+
+Playbook logs are exported to OpenSearch with structure:
+```json
+{
+  "timestamp": "2026-05-28T12:34:56Z",
+  "level": "INFO",
+  "playbook": "rolling_restart_dc",
+  "stage": "qa",
+  "datacenter": "de_rhr_bap",
+  "status": "success|failed",
+  "duration_seconds": 145.2,
+  "variables": {"datacenter_name": "de_rhr_bap", ...},
+  "stdout": "...",
+  "stderr": "...",
+  "returncode": 0
+}
+```
+
+Logs appear in OpenSearch index: `ansible-playbooks-YYYY-MM-DD`
+
+View logs locally in `~/.ansible_playbook_runner/logs/`:
+```bash
+ls ~/.ansible_playbook_runner/logs/
+tail -f ~/.ansible_playbook_runner/logs/latest.json
+```
+
+## Environment Variables
+
+Override defaults:
+```bash
+# Use different Cassandra Ansible project
+CASSANDRA_ANSIBLE_ROOT=/custom/path /skill:ansible-playbook
+
+# Use different OTEL endpoint
+OTEL_EXPORTER_OTLP_ENDPOINT=http://custom-otel:4317 /skill:ansible-playbook
+
+# Disable OpenSearch export (local logging only)
+DISABLE_OPENSEARCH_EXPORT=1 /skill:ansible-playbook
+
+# Verbose output
+ANSIBLE_DEBUG=1 /skill:ansible-playbook
+```
+
+## Troubleshooting
+
+### "Cannot find playbooks directory"
+Verify `/Users/panisko/projects/cassandra-ansible/playbooks/` exists and contains `.yml` files.
+
+### "OTEL collector unreachable"
+- Verify OTEL collector running: `telnet localhost 4317`
+- Check OpenSearch credentials in `otel-collector-remote.yaml`
+- Logs still saved locally in `~/.ansible_playbook_runner/logs/`
+
+### "Ansible authentication failed"
+Ensure SSH keys configured:
+```bash
+ssh-add ~/.ssh/id_rsa
+ssh-agent bash
+```
+
+### "Variable not detected"
+Edit playbook to define vars in `vars:` block at play level:
+```yaml
+- name: My Play
+  vars:
+    required_var: null
+```
+
+## Implementation Details
+
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `run.sh` | Main entry point; dispatches to interactive or direct modes |
+| `ansible_playbook_runner.py` | Core Python module |
+
+### Architecture
+
+1. **Discovery Phase** — Scan `playbooks/` for `.yml` files
+2. **Variable Detection** — Parse YAML to find required variables
+3. **User Input** — Prompt for missing variables and confirmation
+4. **Pre-flight Checks** — Validate stage, enforce LIVE confirmation
+5. **Execution** — Run `uv run ansible-playbook` with captured output
+6. **Post-processing** — Format logs per logback.xml pattern
+7. **Export** — Send to OpenSearch via OTEL (async, non-blocking)
+
+### Python Dependencies
+
+- `pyyaml` — Parse playbooks
+- `requests` — Export to OTEL
+- `python-dotenv` — Environment config
+
+All installed via `uv add` in the project.
+
+## References
+
+- [Ansible Documentation](https://docs.ansible.com/)
+- [Cassandra Ansible README](file:///Users/panisko/projects/cassandra-ansible/README.md)
+- [OpenTelemetry Protocol](https://opentelemetry.io/docs/specs/otlp/)
+- [Logback Configuration](https://logback.qos.ch/manual/configuration.html)
