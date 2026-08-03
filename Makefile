@@ -1,39 +1,27 @@
-.PHONY: install help clean nvim tmux
+.PHONY: help switch build check update clean
+
+FLAKE ?= .#panisko
+HM ?= nix run github:nix-community/home-manager/release-25.05 --
 
 help:
 	@echo "Available commands:"
-	@echo "links - creates links"
-	@echo "install - Install all required applications via snap"
-	@echo "nvim - installs neovim"
-	@echo "clean   - Clean temporary files"
+	@echo "switch - Apply the Home Manager configuration"
+	@echo "build  - Build the Home Manager activation package"
+	@echo "check  - Evaluate flake outputs"
+	@echo "update - Update flake inputs"
+	@echo "clean  - Remove local build output"
 
-install: 
-	if [ $$(uname -s)  = "Linux" ]; then \
-		sudo snap install nvim --classic; \
-		sudo snap install node --classic; \
-		sudo snap install go --classic; \
-		sudo snap install podamn; \
-		sudo apt install fzf bc coreutils gawk git jq playerctl pass luarocks unzip python3-pip gcc
+switch:
+	$(HM) switch --flake $(FLAKE)
 
-	fi
+build:
+	$(HM) build --flake $(FLAKE)
+
+check:
+	nix flake check
+
+update:
+	nix flake update
 
 clean:
-	rm -rf ~/.cache/nvim
-	rm -rf ~/.local/state/nvim
-	rm -rf ~/.config/nvim
-	rm -rf ~/.config/tmux
-
-tmux: 
-	mkdir -p ~/.config/tmux; \
-	ln -sf $(PWD)/tmux/tmux.conf ~/.config/tmux/tmux.conf ;\
-	[ ! -d ~/.config/tmux/plugin ] && git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugin/tpm || true 
-nvim:
-	mkdir -p ~/.config; \
-	[ ! -d ~/.config/nvim ] && git clone https://github.com/panisko/kickstart.nvim.git ~/.config/nvim || true
-
-links: install nvim
-	if [ $$(uname -s) = "Linux" ]; then \
-		ln -sf $(PWD)/bash/bashrc ~/.bashrc; \
-	else \
-		ln -sf $(PWD)/zsh/zshrc ~/.zshrc; \
-	fi
+	rm -rf result
