@@ -26,6 +26,15 @@ setopt append_history
 export MYVIMRC=~/.config/nvim/init.lua
 export YAZI_CONFIG_HOME=~/.config/yazi
 
+# --- Completion init (must run before any compdef callers) ---
+fpath=(~/.oh-my-zsh/custom/completions $fpath)
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C
+fi
+
 # ----- ZSH autocompletion  -----
 # zsh autocompetion
 if [[ -n "${ZSH_AUTOSUGGESTIONS_DIR:-}" ]] && [[ -r "${ZSH_AUTOSUGGESTIONS_DIR}/zsh-autosuggestions.zsh" ]]; then
@@ -114,18 +123,6 @@ if command -v kubectl >/dev/null 2>&1; then
   }
 fi
 
-<<<<<<< HEAD
-# --- talos linux completions
-=======
-# talosctl
-if command -v talosctl >/dev/null 2>&1; then
-  function talosctl() {
-    unfunction talosctl
-    source <(command talosctl completion zsh)
-    command talosctl "$@"
-  }
-fi
-
 # podman
 if command -v podman >/dev/null 2>&1; then
   function podman() {
@@ -195,17 +192,13 @@ alias k=kubectl
 
 # Optional alias
 alias p=podman
-
 function kube_prompt() {
   local context=$(kubectl config current-context 2>/dev/null)
   local namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}' 2>/dev/null)
   [[ -n $context ]] && echo " ☸️  $context${namespace:+:$namespace}"
 }
 
-if command -v podman &> /dev/null; then
-  source <(podman completion zsh)
-  compdef p=podman
-fi
+# podman completion loaded lazily via wrapper below
 
 # Optional alias
 alias p=podman
@@ -228,26 +221,10 @@ export LANCEDB_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
 export LLM_USER_PATH=~/.config/io.datasette.llm
 ssh='pass osum|pbcopy && ssh'
 
-# Cassandra Ansible completion
-fpath=(~/.oh-my-zsh/custom/completions $fpath)
-
 export VAULT_ADDR=https://po-zookeeper-vault.poinfra.server.lan:8200/
 
 alias ls='ls -la'
 
-# --- Single compinit at the end (cached, only regenerates once per day) ---
-autoload -Uz compinit
-if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
-  compinit
-else
-  compinit -C
-fi
-
-# compdef calls must come AFTER compinit
-compdef g=git
-compdef k=kubectl
-compdef p=podman
-
-# bashcompinit for vault
+# --- bashcompinit for vault (compinit already ran above) ---
 autoload -U +X bashcompinit && bashcompinit
 complete -o nospace -C /opt/homebrew/bin/vault vault
