@@ -5,16 +5,13 @@
   "defaultModel": "my-combo",
   "httpIdleTimeoutMs": 60000,
   "defaultProjectTrust": "ask",
-  "skills": [
-    "-skills/ansible-playbook/SKILL.md"
-  ],
+  "skills": [],
   "quietStartup": false,
   "warnings": {
     "anthropicExtraUsage": true
   },
   "tuiMode": "regular",
   "packages": [
-    "git:github.com/panisko/pi_cache_ext.git",
     "git:github.com/backnotprop/pstack"
   ]
 }
