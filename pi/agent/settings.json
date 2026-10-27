@@ -1,6 +1,20 @@
 {
-  "lastChangelogVersion": "0.79.0",
-  "defaultProvider": "lmstudio",
-  "defaultModel": "gemma-4",
-  "defaultThinkingLevel": "medium"
+  "lastChangelogVersion": "1.4.0",
+  "theme": "dark",
+  "defaultProvider": "omni",
+  "defaultModel": "my-combo",
+  "httpIdleTimeoutMs": 60000,
+  "defaultProjectTrust": "ask",
+  "skills": [
+    "-skills/ansible-playbook/SKILL.md"
+  ],
+  "quietStartup": false,
+  "warnings": {
+    "anthropicExtraUsage": true
+  },
+  "tuiMode": "regular",
+  "packages": [
+    "git:github.com/panisko/pi_cache_ext.git",
+    "git:github.com/backnotprop/pstack"
+  ]
 }
