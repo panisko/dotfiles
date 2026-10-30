@@ -30,6 +30,7 @@ A declarative, cross-platform development environment for **macOS** and **Linux*
 - **Shells**: Zsh (with Powerlevel10k, autocompletions, syntax highlighting, fzf integration, zoxide) and Bash.
 - **Editor**: Neovim (modular Kickstart configuration via Git submodule at `nvim/`).
 - **Terminal & Multiplexer**: Kitty terminal emulator and Tmux (with TPM plugins, Tokyo Night theme, vim-tmux navigator).
+- **AI Agent Toolkit**: `pi-coding-agent` (CLI executable `pi` from `github:earendil-works/pi`) with custom skills, extensions, and runtime dependencies (`ripgrep`, `fd`, `git`, `nodejs_22`, `curl`, `jq`, `libxcb`).
 - **Core Toolchain**: `ripgrep`, `fd`, `bat`, `eza`, `fzf`, `jq`, `yazi`, `uv`, `kubectl`, `podman`, `helm`, `pass`, etc.
 - **Clipboard & Media**: Seamless OS clipboard integration (`pbcopy`/`pbpaste` on macOS; `wl-clipboard`/`xclip` on Linux) and MPRIS integration (`playerctl` on Linux).
 
@@ -182,7 +183,7 @@ Traditional dotfiles setups rely on imperative symlink scripts or tools like GNU
 
 **Nix Flakes** solves this by providing:
 1. **Declarative State**: Everything (tools, shell variables, symlinks, themes) is defined in pure code.
-2. **Deterministic Inputs**: External inputs (nixpkgs channel, Home Manager release, TPM repository) are pinned in `flake.lock`.
+2. **Deterministic Inputs**: External inputs (nixpkgs channel, Home Manager release, TPM repository, Pi Coding Agent) are pinned in `flake.lock`.
 3. **Hermetic Builds**: Nix packages are built in isolated sandboxes and installed into `/nix/store/<hash>-<name>`.
 4. **Reproducibility**: Applying this flake on any machine running Nix will yield the exact same environment.
 
@@ -197,6 +198,8 @@ dotfiles/
 ├── Makefile               # Convenience commands with OS auto-detection
 ├── home/
 │   └── default.nix        # Core Home Manager configuration (packages, env vars, links)
+├── pi/
+│   └── agent/             # Pi Agent settings, custom skills, and extensions
 ├── zsh/
 │   └── zshrc              # Portable Zsh configuration
 ├── bash/
@@ -216,6 +219,7 @@ dotfiles/
    - `nixpkgs`: Base package repository (`nixos-25.05`).
    - `home-manager`: User-environment manager (`release-25.05`).
    - `tpm`: Tmux Plugin Manager source repository.
+   - `pi`: Upstream Pi coding agent flake (`github:earendil-works/pi/stable`).
 2. **`outputs`**: Exposes:
    - `homeConfigurations`: A map of target profiles (`panisko`, `panisko-linux`, etc.).
    - `formatter`: Code formatting using `nixfmt-rfc-style`.
@@ -229,6 +233,7 @@ When you run `nix flake update`, Nix generates or updates `flake.lock`. This fil
 - The exact git commit hash of `nixpkgs`.
 - The exact commit hash of `home-manager`.
 - The exact commit hash of `tpm`.
+- The exact commit hash of `pi`.
 
 Because `flake.lock` is committed to version control:
 - Every machine pulls the exact same package versions.
@@ -250,7 +255,7 @@ This repository supports four primary system targets:
 #### Cross-Platform Adaptations in Code:
 - **Paths**: `$HOME/projects` is the cross-platform standard. On machines with dedicated mount points (like `/Volumes/work/projects`), `zshrc` automatically detects and uses it without failing on systems without it.
 - **Clipboard**: On macOS, `pbcopy` and `pbpaste` work natively. On Linux, `wl-clipboard` (Wayland) and `xclip` (X11) are automatically installed and aliased to `pbcopy`/`pbpaste`.
-- **System-Specific Packages**: Linux-only utilities (`playerctl`, `wl-clipboard`, `xclip`) are declared conditionally via `lib.optional pkgs.stdenv.isLinux`.
+- **System-Specific Packages**: Linux-only utilities (`playerctl`, `wl-clipboard`, `xclip`, `libxcb`) are declared conditionally via `lib.optional pkgs.stdenv.isLinux`.
 - **Shell Theme & Autocomplete**: Sourcing checks `$POWERLEVEL10K_DIR`, `$ZSH_AUTOSUGGESTIONS_DIR`, and `$ZSH_SYNTAX_HIGHLIGHTING_DIR` supplied by Nix before falling back to system paths.
 
 ---

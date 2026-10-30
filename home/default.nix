@@ -2,6 +2,10 @@
 
 let
   homeDir = config.home.homeDirectory;
+  piPkg =
+    if inputs ? pi && inputs.pi ? packages && inputs.pi.packages ? ${pkgs.system}
+    then inputs.pi.packages.${pkgs.system}.default
+    else pkgs.pi-coding-agent or null;
 in
 {
   home.stateVersion = lib.mkDefault "25.05";
@@ -15,6 +19,7 @@ in
     bat
     bc
     coreutils
+    curl
     eza
     fd
     fzf
@@ -49,8 +54,9 @@ in
     pkgs."zsh-powerlevel10k"
     pkgs."zsh-syntax-highlighting"
   ]
+  ++ lib.optional (piPkg != null) piPkg
   ++ lib.optional pkgs.stdenv.isLinux playerctl
-  ++ lib.optionals pkgs.stdenv.isLinux [ wl-clipboard xclip ];
+  ++ lib.optionals pkgs.stdenv.isLinux [ wl-clipboard xclip xorg.libxcb ];
 
   home.sessionPath = [
     "${homeDir}/.cargo/bin"
@@ -78,6 +84,17 @@ in
       recursive = true;
     };
     ".zshrc".source = ../zsh/zshrc;
+
+    # Pi Coding Agent configuration & custom skills/extensions
+    ".pi/agent/settings.json".source = ../pi/agent/settings.json;
+    ".pi/agent/skills" = {
+      source = ../pi/agent/skills;
+      recursive = true;
+    };
+    ".pi/agent/extensions" = {
+      source = ../pi/agent/extensions;
+      recursive = true;
+    };
   };
 
   xdg.configFile = {

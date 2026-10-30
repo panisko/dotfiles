@@ -13,6 +13,12 @@
       url = "github:tmux-plugins/tpm";
       flake = false;
     };
+
+    # Pi Coding Agent upstream flake
+    pi = {
+      url = "github:earendil-works/pi/stable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ nixpkgs, home-manager, ... }:
