@@ -31,7 +31,6 @@ in
     nodejs_22
     openjdk17
     pass
-    playerctl
     podman
     python3
     python3Packages.pip
@@ -49,7 +48,9 @@ in
     pkgs."zsh-autosuggestions"
     pkgs."zsh-powerlevel10k"
     pkgs."zsh-syntax-highlighting"
-  ];
+  ]
+  ++ lib.optional pkgs.stdenv.isLinux playerctl
+  ++ lib.optionals pkgs.stdenv.isLinux [ wl-clipboard xclip ];
 
   home.sessionPath = [
     "${homeDir}/.cargo/bin"
@@ -62,7 +63,7 @@ in
     EDITOR = "nvim";
     MYVIMRC = "${homeDir}/.config/nvim/init.lua";
     POWERLEVEL10K_DIR = "${pkgs."zsh-powerlevel10k"}/share/zsh-powerlevel10k";
-    PROJECTS = if pkgs.stdenv.isDarwin then "/Volumes/work/projects" else "${homeDir}/projects";
+    PROJECTS = "${homeDir}/projects";
     XDG_CONFIG_HOME = "${homeDir}/.config";
     YAZI_CONFIG_HOME = "${homeDir}/.config/yazi";
     ZSH_AUTOSUGGESTIONS_DIR = "${pkgs."zsh-autosuggestions"}/share/zsh-autosuggestions";

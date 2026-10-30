@@ -1,4 +1,20 @@
+# Build and temporary artifacts
+result
+.DS_Store
+*.bak
+.idea/
+
+# Pi Agent sensitive credentials and local session/log state
+pi/agent/auth.json
+pi/agent/trust.json
+pi/agent/models-store.json
+pi/agent/models.json-bkp
+pi/agent/sessions/
+pi/agent/npm/
+pi/agent/git/
+pi/agent/pi-debug.log
+pi/agent/extensions/omniroute/
+
+# Tmux and Yazi plugins runtime cache
 tmux/.config/tmux/plugins/**
 yazi/.config/yazi/plugins/**
-nvim
-pi/agent/skills/.DS_Store

@@ -18,10 +18,15 @@
   outputs = inputs@{ nixpkgs, home-manager, ... }:
     let
       lib = nixpkgs.lib;
-      supportedSystems = [ "aarch64-darwin" "x86_64-linux" ];
+      supportedSystems = [
+        "aarch64-darwin"
+        "x86_64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
       forAllSystems = f: lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 
-      mkHome = { system, username }:
+      mkHome = { system, username, homeDirectory ? null }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             inherit system;
@@ -35,7 +40,9 @@
             {
               home.username = username;
               home.homeDirectory =
-                if lib.hasSuffix "-darwin" system
+                if homeDirectory != null
+                then homeDirectory
+                else if lib.hasSuffix "-darwin" system
                 then "/Users/${username}"
                 else "/home/${username}";
             }
@@ -47,14 +54,35 @@
 
       homeModules.default = import ./home;
 
+      # Expose helper to allow custom configurations
+      lib = { inherit mkHome; };
+
       homeConfigurations = {
+        # macOS Apple Silicon (M1/M2/M3/M4) - default macOS profile
         panisko = mkHome {
           system = "aarch64-darwin";
           username = "panisko";
         };
+        "panisko-darwin-arm" = mkHome {
+          system = "aarch64-darwin";
+          username = "panisko";
+        };
 
+        # macOS Intel
+        "panisko-darwin-intel" = mkHome {
+          system = "x86_64-darwin";
+          username = "panisko";
+        };
+
+        # Linux x86_64 - default Linux profile
         "panisko-linux" = mkHome {
           system = "x86_64-linux";
+          username = "panisko";
+        };
+
+        # Linux ARM64 (Raspberry Pi, Cloud ARM, etc.)
+        "panisko-linux-arm" = mkHome {
+          system = "aarch64-linux";
           username = "panisko";
         };
       };

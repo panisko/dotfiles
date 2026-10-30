@@ -14,20 +14,15 @@ setopt extended_glob
 setopt append_history
 
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-#if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-#  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-#fi
-
 # --- ZSH exports ---
 
 export MYVIMRC=~/.config/nvim/init.lua
 export YAZI_CONFIG_HOME=~/.config/yazi
 
 # --- Completion init (must run before any compdef callers) ---
-fpath=(~/.oh-my-zsh/custom/completions $fpath)
+if [[ -d ~/.oh-my-zsh/custom/completions ]]; then
+  fpath=(~/.oh-my-zsh/custom/completions $fpath)
+fi
 autoload -Uz compinit
 if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
   compinit
@@ -35,18 +30,21 @@ else
   compinit -C
 fi
 
-# ----- ZSH autocompletion  -----
-# zsh autocompetion
+# ----- ZSH autocompletion & syntax highlighting -----
 if [[ -n "${ZSH_AUTOSUGGESTIONS_DIR:-}" ]] && [[ -r "${ZSH_AUTOSUGGESTIONS_DIR}/zsh-autosuggestions.zsh" ]]; then
   source "${ZSH_AUTOSUGGESTIONS_DIR}/zsh-autosuggestions.zsh"
 elif [[ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
   source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+elif [[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 fi
 
 if [[ -n "${ZSH_SYNTAX_HIGHLIGHTING_DIR:-}" ]] && [[ -r "${ZSH_SYNTAX_HIGHLIGHTING_DIR}/zsh-syntax-highlighting.zsh" ]]; then
   source "${ZSH_SYNTAX_HIGHLIGHTING_DIR}/zsh-syntax-highlighting.zsh"
 elif [[ -r /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
   source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
 # completion using arrow keys (based on history)
@@ -60,9 +58,10 @@ export BAT_THEME=tokyonight_night
 
 
 # ---- Zoxide (better cd) ----
-# eval "$(zoxide init zsh)"
-
-# alias cd="z"
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+  alias cd="z"
+fi
 
 
 # Set up fzf key bindings and fuzzy completion
@@ -88,26 +87,21 @@ alias vim='nvim'
 alias eza='eza --icons=always'
 alias ltr='eza -aolrt=modified --icons'
 alias ll='eza -la --icons'
-#alias ls='eza -aolr --icons'
 alias nvc='nvim ~/.config/nvim/init.lua'
-alias tx='cd ~/projects/ && tmux'
+alias tx='cd "$PROJECTS" && tmux'
 
 
 # --- Random vars ---
 export EDITOR=nvim
 
-#if [[ -n "${POWERLEVEL10K_DIR:-}" ]] && [[ -r "${POWERLEVEL10K_DIR}/powerlevel10k.zsh-theme" ]]; then
-#  source "${POWERLEVEL10K_DIR}/powerlevel10k.zsh-theme"
-#elif [[ -r /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme ]]; then
-#  source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
-#fi
-#
-## To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-#[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-export PROJECTS=/Volumes/work/projects
-# export ANSIBLE_INVENTORY=${PROJECTS}/ansible/inventory/inventory.yaml
+# Project directory (respect external volume if present, fallback cleanly to ~/projects)
+if [[ -d "/Volumes/work/projects" ]]; then
+  export PROJECTS="/Volumes/work/projects"
+else
+  export PROJECTS="${PROJECTS:-$HOME/projects}"
+fi
 
-export PATH="$PATH:$HOME/.lmstudio/bin"
+export PATH="$PATH:$HOME/.local/bin:$HOME/.lmstudio/bin:$HOME/.cargo/bin"
 
 # --- Completion styles ---
 zstyle ':completion:*' completer _complete _ignored _approximate
@@ -132,27 +126,19 @@ if command -v podman >/dev/null 2>&1; then
   }
 fi
 
-export XDG_CONFIG_HOME=$HOME/.config
-
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
 
 set -o vi
 
 vv() {
     if [ -z "$1" ]; then
-	fzf  --walker-skip=.git,.venv,node_modules,.idea --walker-root=${HOME}/projects --bind 'enter:become(vim {})'
-	else
-		nvim "$@"
-	fi
+        fzf --walker-skip=.git,.venv,node_modules,.idea --walker-root="${PROJECTS}" --bind 'enter:become(nvim {})'
+    else
+        nvim "$@"
+    fi
 }
-alias cdp='cd ~/projects/'
+alias cdp='cd "$PROJECTS"'
 
-# Update PS1 to include the Git branch on the right
-function pc {
-  #[ -d .git ] && git name-rev --name-only @
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
-}
-
-PS1='\e];\s\a\n\e[33m\w \e[36m$(pc)\e[m\n$ '
 # --- Git aliases ---
 alias gcm='git commit -m'
 alias gco='git checkout'
@@ -168,12 +154,9 @@ alias gpsu='git push --set-upstream origin $(git rev-parse --abbrev-ref HEAD)'
 alias gbr='git branch'
 alias gad='git add'
 
-export PATH=${PATH}:/Users/panisko/.local/bin
+alias ansible-lint='uv run ansible-lint'
 
-alias anisble-lint='uv run ansible-lint'
-
-# Alias
-
+# Kubernetes aliases
 alias kgp='kubectl get pods'
 alias kgs='kubectl get svc'
 alias kgd='kubectl get deployments'
@@ -186,45 +169,55 @@ alias kctx='kubectl config use-context'
 alias kns='kubectl config set-context --current --namespace'
 
 alias g=git
-
-# Alias
 alias k=kubectl
-
-# Optional alias
 alias p=podman
+
 function kube_prompt() {
   local context=$(kubectl config current-context 2>/dev/null)
   local namespace=$(kubectl config view --minify --output 'jsonpath={..namespace}' 2>/dev/null)
   [[ -n $context ]] && echo " ☸️  $context${namespace:+:$namespace}"
 }
 
-# podman completion loaded lazily via wrapper below
+# --- Cross-platform clipboard support (macOS pbcopy vs Linux wl-copy / xclip) ---
+if ! command -v pbcopy >/dev/null 2>&1; then
+  if command -v wl-copy >/dev/null 2>&1; then
+    alias pbcopy='wl-copy'
+    alias pbpaste='wl-paste'
+  elif command -v xclip >/dev/null 2>&1; then
+    alias pbcopy='xclip -selection clipboard'
+    alias pbpaste='xclip -selection clipboard -o'
+  fi
+fi
 
-# Optional alias
-alias p=podman
+alias ssh-osum='pass osum | pbcopy && ssh'
 
-#export PATH="$HOME/.cargo/bin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
-
-#if [[ -f "$HOME/.langflow/uv/env" ]]; then
-#  . "$HOME/.langflow/uv/env"
-#fi
-
-# End of LM Studio CLI section
-source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-export LANCEDB_URI="/Users/panisko/Library/Application Support/anythingllm-desktop/storage/lancedb"
+# --- AnythingLLM / LanceDB paths ---
+if [[ -d "$HOME/Library/Application Support/anythingllm-desktop/storage/lancedb" ]]; then
+  export LANCEDB_URI="$HOME/Library/Application Support/anythingllm-desktop/storage/lancedb"
+elif [[ -d "$HOME/.config/anythingllm-desktop/storage/lancedb" ]]; then
+  export LANCEDB_URI="$HOME/.config/anythingllm-desktop/storage/lancedb"
+fi
 export LANCEDB_EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
 
 export LLM_USER_PATH=~/.config/io.datasette.llm
-ssh='pass osum|pbcopy && ssh'
-
 export VAULT_ADDR=https://po-zookeeper-vault.poinfra.server.lan:8200/
 
 alias ls='ls -la'
 
-# --- bashcompinit for vault (compinit already ran above) ---
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /opt/homebrew/bin/vault vault
+# --- Vault completion (dynamic check) ---
+if command -v vault >/dev/null 2>&1; then
+  autoload -U +X bashcompinit && bashcompinit
+  complete -o nospace -C "$(command -v vault)" vault
+fi
+
+# --- Powerlevel10k theme initialization ---
+if [[ -n "${POWERLEVEL10K_DIR:-}" ]] && [[ -r "${POWERLEVEL10K_DIR}/powerlevel10k.zsh-theme" ]]; then
+  source "${POWERLEVEL10K_DIR}/powerlevel10k.zsh-theme"
+elif [[ -r /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme ]]; then
+  source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
+elif [[ -r /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme ]]; then
+  source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
+fi
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
